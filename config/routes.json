@@ -15,6 +15,14 @@
       "config": {
         "policies": []
       }
+    },
+    {
+      "method": "post",
+      "path": "/elements/",
+      "handler": "Explorer.setElement",
+      "config": {
+        "policies": []
+      }
     }
   ]
 }

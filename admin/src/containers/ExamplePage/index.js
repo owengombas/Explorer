@@ -13,37 +13,66 @@ import injectSaga from 'utils/injectSaga';
 import Button from 'components/Button';
 
 import styles from './styles.scss';
-import { loadData, setTreeData } from './actions';
+import { loadData, setTreeData, persist } from './actions';
 import { makeSelectLoading, makeSelectData, makeSelectTreeData } from './selectors';
 import reducer from './reducer';
 import saga from './saga';
 
 export class ExamplePage extends React.Component {
+  selected = null;
   constructor(props) {
     super(props);
     props.loadData();
-    console.log('...');
-    this.state = {
-    };
   }
   tree() {
     return (
-      <div style={{ height: 400 }}>
+      <div style={{ height: 500, width: 300}}>
         <SortableTree
         treeData={this.props.treeData}
         onChange={data => this.props.setTreeData(data)}
         theme={FileExplorerTheme}
-        canDrag={false}>
+        canDrag={false}
+        generateNodeProps={rowInfo => ({
+          onClick: () => {
+            this.selected = rowInfo.node;
+            this.forceUpdate();
+            console.log(rowInfo.node);
+          }
+        })}>
         </SortableTree>
       </div>
     );
   }
+  fields () {
+    if(this.selected !== null) {
+      const field = [];
+      for (let prop in this.selected.fields) {
+        field.push(
+          <div>
+            <span>{prop}</span>
+            <input placeholder={this.selected.fields[prop]}/>
+          </div>
+        );
+      }
+      return field;
+    } else {
+      return <div></div>;
+    }
+  }
   render() {
+    const selectedElement = this.fields();
     return (
       <div className={styles.examplePage}>
         <div className="row">
-          <div className="col-md-12">
+          <div className="col-md-3">
             {this.tree()}
+          </div>
+          <div className="col-md-9 card">
+            {selectedElement}
+            <Button
+            primary
+            onClick={this.props.persist(this.selected)}
+            label="Apply"/>
           </div>
         </div>
       </div>
@@ -60,6 +89,7 @@ ExamplePage.propTypes = {
     PropTypes.bool,
     PropTypes.object,
   ]),
+  persist: PropTypes.func,
   setTreeData: PropTypes.func,
   loadData: PropTypes.func.isRequired,
   loading: PropTypes.bool.isRequired,
@@ -69,7 +99,8 @@ function mapDispatchToProps(dispatch) {
   return bindActionCreators(
     {
       loadData,
-      setTreeData
+      setTreeData,
+      persist
     },
     dispatch,
   );
