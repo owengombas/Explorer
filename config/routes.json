@@ -1,0 +1,20 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/",
+      "handler": "Explorer.index",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/elements",
+      "handler": "Explorer.getElements",
+      "config": {
+        "policies": []
+      }
+    }
+  ]
+}
