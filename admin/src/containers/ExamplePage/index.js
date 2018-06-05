@@ -71,9 +71,12 @@ export class ExamplePage extends React.Component {
     });
   }
   handleMoveNode = ({node, nextParentNode}) => {
-    console.log(node, nextParentNode);
     console.log(this.getSelectedProps(node));
-    node.parent[0] = nextParentNode._id;
+    if (nextParentNode) {
+      node.parent[0] = nextParentNode._id;
+    } else {
+      node.parent = [];
+    }
     console.log(this.getSelectedProps(node));
     this.updateView(node);
     this.persistData();
