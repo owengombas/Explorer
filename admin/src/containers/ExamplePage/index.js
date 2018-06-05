@@ -11,6 +11,7 @@ import injectReducer from 'utils/injectReducer';
 import injectSaga from 'utils/injectSaga';
 
 import Button from 'components/Button';
+import InputText from 'components/InputText';
 
 import styles from './styles.scss';
 import { loadData, setTreeData, persist, setSelected } from './actions';
@@ -44,9 +45,18 @@ export class ExamplePage extends React.Component {
       }
     });
   }
+  handleInputChangeTitle = event => {
+    const value = event.target.value;
+    this.setState({
+      edited: {
+        ...this.state.edited,
+        title: value
+      }
+    });
+  }
   tree() {
     return (
-      <div style={{ height: 500, width: 300}}>
+      <div style={{ height: 500}}>
         <SortableTree
         treeData={this.props.treeData}
         onChange={data => this.props.setTreeData(data)}
@@ -73,15 +83,26 @@ export class ExamplePage extends React.Component {
     if(this.props.selected !== null) {
       const field = [];
       field.push(
-        <div>
-          <input class="title" value={this.props.selected.title}/>
+        <div className="col-md-12">
+          <input className={styles.title} onChange={this.handleInputChangeTitle} value={this.state.edited.title}/>
         </div>
       );
       for (let prop in this.props.selected.fields) {
         field.push(
           <div>
-            <span>{prop}</span>
-            <input placeholder={this.props.selected.fields[prop]} onChange={this.handleInputChange(prop)} value={this.state.edited.fields[prop]}/>
+            <div className="col-md-3">
+              <h2>{prop}</h2>
+            </div>
+            <div className={styles.mb_25 + ' col-md-12'}>
+              <InputText
+              styles={styles}
+              key={prop}
+              name={prop}
+              inputDescription={prop}
+              placeholder={this.props.selected.fields[prop]}
+              onChange={this.handleInputChange(prop)}
+              value={this.state.edited.fields[prop]}></InputText>
+            </div>
           </div>
         );
       }
@@ -96,10 +117,11 @@ export class ExamplePage extends React.Component {
       <Button
       primary
       onClick={() => {
+        this.state.edited.tmp.title = this.state.edited.title;
         this.state.edited.tmp.fields = this.state.edited.fields;
         this.props.setSelected({
           _id: this.props.selected._id,
-          title: this.props.selected.title,
+          title: this.state.edited.title,
           fields: {
             ...this.props.selected.fields,
             ...this.state.edited.fields
@@ -112,15 +134,19 @@ export class ExamplePage extends React.Component {
     return (
       <div className={styles.examplePage}>
         <div className="row">
-          <div className="col-md-3">
-            {this.tree()}
-          </div>
-          <div className="col-md-9 card">
-            <div>
-              {selectedElement}
-            </div>
-            <div>
-              {renderBtn}
+          <div className="col-md-12">
+            <div className="row">
+              <div className="col-md-3">
+                {this.tree()}
+              </div>
+              <div className={styles.card + ' col-md-9'}>
+                <div>
+                  {selectedElement}
+                </div>
+                <div className="col-md-12">
+                  {renderBtn}
+                </div>
+              </div>
             </div>
           </div>
         </div>

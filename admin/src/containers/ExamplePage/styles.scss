@@ -2,18 +2,34 @@
     overflow: hidden;
 }
 
-.card {
-    height: 100%;
-    background: white;
-}
-
 .title {
     font-size: 2em !important;
     font-weight: bold !important;
+    width: 100%;
+    @extend .mb_25;
+    border-radius: .2em;
+    padding: 0 .4em;
+    transition: all .3s;
+    background: rgba(0, 0, 0, .019);
+    border: 1px solid transparent;
+    &:hover, &:focus, &:active {
+        background: rgba(0, 0, 0, .02);
+        box-shadow: 0px 2px 1px rgba(104, 118, 142, 0.2);
+        border-color: #E3E9F3; // #78caff
+    }
 }
 
 .card {
-    height: 100vh !important;
+    padding: 2em 2em 0 2em;
+    height: calc(100vh - 6rem);
+    border: none !important;
+    background: white;
+    overflow: auto;
+    box-shadow: 15px 0px 40px -8px rgba(0,0,0,0.15);
+}
+
+.mb_25 {
+    margin-bottom: 25px !important;
 }
 
 * {

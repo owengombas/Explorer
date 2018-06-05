@@ -12,6 +12,7 @@ export function* loadData() {
     const data = yield call(request, '/explorer/elements', { method: 'get' });
     yield put(loadedData(data));
   } catch(err) {
+    strapi.notification.error('Server error');
     console.log(err.response.payload);
   }
 }
@@ -19,6 +20,7 @@ export function* loadData() {
 export function* persist() {
   const selected = yield select(makeSelectSelected());
   try {
+    strapi.notification.success('Saved !');
     const data = yield call(request, '/explorer/elements/', {
       method: 'PUT',
       body: JSON.stringify(selected),
@@ -29,6 +31,7 @@ export function* persist() {
     }, false, false);
     yield put(persisted(data));
   } catch(err) {
+    strapi.notification.error('Server error');
     console.log(err.response.payload);
   }
 }
