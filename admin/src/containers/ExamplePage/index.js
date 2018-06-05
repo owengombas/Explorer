@@ -92,7 +92,7 @@ export class ExamplePage extends React.Component {
     console.log(m);
     return m;
   }
-  updateView(newObj) {
+  updateView = (newObj) => {
     newObj = this.getSelectedProps(newObj);
     this.props.setSelected(newObj);
     this.setState({edited: newObj});
@@ -117,6 +117,11 @@ export class ExamplePage extends React.Component {
       </div>
     );
   }
+  removeKey(obj, deleteKey) {
+    let clone = Object.assign({}, obj);
+    delete clone[deleteKey];
+    return clone;
+  }
   fields () {
     if(this.state.edited.selected !== null) {
       const field = [];
@@ -133,8 +138,8 @@ export class ExamplePage extends React.Component {
                 <input className={styles.prop} value={prop} onChange={this.handleInputChangeProp(prop)}/>
               </div>
             </div>
-            <div className="row">
-              <div className='col-lg-10 col-md-9'>
+            <div className={styles.relative + ' row'}>
+              <div className='col-md-12'>
                 <InputText
                 styles={styles}
                 key={prop}
@@ -144,12 +149,16 @@ export class ExamplePage extends React.Component {
                 onChange={this.handleInputChange(prop)}
                 value={this.state.edited.fields[prop]}></InputText>
               </div>
-              <div className="col-md-3 col-lg-2">
+              <div className={styles.btnDeleteGrp}>
                 <button
                 className={styles.btnDelete}
                 onClick={() => {
-                  delete this.state.edited.fields[prop];
-                  this.forceUpdate();
+                  this.setState({
+                    edited: {
+                      ...this.state.edited,
+                      fields: this.removeKey(this.state.edited.fields, prop)
+                    }
+                  });
                 }}>-</button>
               </div>
             </div>
@@ -164,15 +173,7 @@ export class ExamplePage extends React.Component {
   persistData = () => {
     this.state.edited.tmp.title = this.state.edited.title;
     this.state.edited.tmp.fields = this.state.edited.fields;
-    this.props.setSelected({
-      _id: this.props.selected._id,
-      parent: this.props.selected.parent,
-      title: this.state.edited.title,
-      fields: {
-        ...this.props.selected.fields,
-        ...this.state.edited.fields
-      }
-    });
+    this.props.setSelected(this.state.edited);
     this.props.persist();
   }
   render() {
@@ -191,13 +192,22 @@ export class ExamplePage extends React.Component {
             return;
           }}/>
         </div>
-        <div>
+        <div className={styles.mb_25}>
           <Button
           primary
           onClick={() => {
             this.persistData();
           }}
           label="Apply"/>
+        </div>
+        <div>
+          <Button
+          primary
+          onClick={() => {
+            console.log(this.state.edited, this.props.selected);
+            this.updateView(this.props.selected);
+          }}
+          label="Cancel"/>
         </div>
       </div>
     ) : <div></div>;

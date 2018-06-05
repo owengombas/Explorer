@@ -30,7 +30,8 @@
     }
 }
 
-.innerTree {
+.relative {
+    position: relative;
 }
 
 .card {
@@ -47,36 +48,49 @@
 }
 
 .btnDelete {
-    vertical-align: bottom;
     font-size: 2em;
-    background: #292b2ce8;
-    height: 3.4rem;
+    opacity: .2;
+    background: #f13248;
+    height: 2.5rem;
     max-width: 50px;
     margin-top: .9rem;
-    line-height: 3.4rem;
+    line-height: 2.5rem;
     align-self: flex-end;
     color: white;
     border-radius: .2em;
     width: 100% !important;
     cursor: pointer;
     box-shadow: 15px 0px 40px -8px rgba(0, 0, 0, 0.377);
+    transition: all .2s;
+}
+
+.btnDeleteGrp {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    right: 1.5em;
+    height: 3.8rem;
+    &:hover {
+        .btnDelete {
+            opacity: 1;
+        }
+    }
 }
 
 .prop {
-    width: auto !important;
+    width: 100%;
     font-size: 1.2em;
     font-weight: bold;
     border-radius: .2em;
     padding: 0 .4em;
     transition: all .3s;
     border: 1px solid transparent;
-    /*
     &:hover, &:focus, &:active {
         background: rgba(0, 0, 0, .02);
         box-shadow: 0px 1px 1px rgba(104, 118, 142, 0.2);
         border-color: #E3E9F3; // #78caff
     }
-    */
 }
 
 * {
