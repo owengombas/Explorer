@@ -27,6 +27,7 @@ export class ExamplePage extends React.Component {
     this.state = {
       edited: {
         _id: '',
+        parent: [],
         tmp: false,
         title: 'Nothing is selected',
         fields: []
@@ -69,10 +70,36 @@ export class ExamplePage extends React.Component {
       }
     });
   }
+  handleMoveNode = ({node, nextParentNode}) => {
+    console.log(node, nextParentNode);
+    console.log(this.getSelectedProps(node));
+    node.parent[0] = nextParentNode._id;
+    console.log(this.getSelectedProps(node));
+    this.updateView(node);
+    this.persistData();
+  }
+  getSelectedProps = (obj) => {
+    let m = {
+      _id: obj._id,
+      parent: obj.parent,
+      title: obj.title,
+      fields: obj.fields,
+      tmp: obj
+    };
+    console.log(m);
+    return m;
+  }
+  updateView(newObj) {
+    newObj = this.getSelectedProps(newObj);
+    this.props.setSelected(newObj);
+    this.setState({edited: newObj});
+    this.forceUpdate();
+  }
   tree() {
     return (
       <div style={{ height: 500, margin: '1em .5em 0 1em'}}>
         <SortableTree
+        onMoveNode={this.handleMoveNode}
         treeData={this.props.treeData}
         onChange={data => this.props.setTreeData(data)}
         theme={FileExplorerTheme}
@@ -80,15 +107,7 @@ export class ExamplePage extends React.Component {
         scaffoldBlockPxWidth={20}
         generateNodeProps={rowInfo => ({
           onClick: () => {
-            const newObj = {
-              _id: rowInfo.node._id,
-              title: rowInfo.node.title,
-              fields: rowInfo.node.fields,
-              tmp: rowInfo.node
-            };
-            this.props.setSelected(newObj);
-            this.setState({edited: newObj});
-            this.forceUpdate();
+            this.updateView(rowInfo.node);
           }
         })}>
         </SortableTree>
@@ -139,6 +158,20 @@ export class ExamplePage extends React.Component {
       return <div></div>;
     }
   }
+  persistData = () => {
+    this.state.edited.tmp.title = this.state.edited.title;
+    this.state.edited.tmp.fields = this.state.edited.fields;
+    this.props.setSelected({
+      _id: this.props.selected._id,
+      parent: this.props.selected.parent,
+      title: this.state.edited.title,
+      fields: {
+        ...this.props.selected.fields,
+        ...this.state.edited.fields
+      }
+    });
+    this.props.persist();
+  }
   render() {
     const selectedElement = this.fields();
     const renderBtn = this.props.selected ? (
@@ -159,17 +192,7 @@ export class ExamplePage extends React.Component {
           <Button
           primary
           onClick={() => {
-            this.state.edited.tmp.title = this.state.edited.title;
-            this.state.edited.tmp.fields = this.state.edited.fields;
-            this.props.setSelected({
-              _id: this.props.selected._id,
-              title: this.state.edited.title,
-              fields: {
-                ...this.props.selected.fields,
-                ...this.state.edited.fields
-              }
-            });
-            this.props.persist();
+            this.persistData();
           }}
           label="Apply"/>
         </div>
