@@ -18,4 +18,7 @@ const makeSelectData = () =>
 const makeSelectTreeData = () =>
   createSelector(selectExamplePageDomain(), substate => substate.get('treeData'));
 
-export { makeSelectLoading, makeSelectData, makeSelectTreeData };
+const makeSelectSelected = () =>
+  createSelector(selectExamplePageDomain(), substate => substate.get('selected'));
+
+export { makeSelectLoading, makeSelectData, makeSelectTreeData, makeSelectSelected };

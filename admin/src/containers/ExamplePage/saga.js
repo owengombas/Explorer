@@ -1,8 +1,11 @@
 import request from 'utils/request';
 import { LOCATION_CHANGE } from 'react-router-redux';
-import { takeLatest, put, fork, take, cancel, call } from 'redux-saga/effects';
-import { loadedData } from './actions';
-import { LOAD_DATA } from './constants';
+import { takeLatest, put, fork, take, cancel, call, select } from 'redux-saga/effects';
+import { loadedData, persisted } from './actions';
+import { LOAD_DATA, PERSIST } from './constants';
+import {
+  makeSelectSelected
+} from './selectors';
 
 export function* loadData() {
   try {
@@ -13,10 +16,18 @@ export function* loadData() {
   }
 }
 
-export function* submit() {
+export function* persist() {
+  const selected = yield select(makeSelectSelected());
   try {
-    const data = yield call(request, '/explorer/elements/', { method: 'post', body: '', params });
-    yield put(loadedData(data));
+    const data = yield call(request, '/explorer/elements/', {
+      method: 'PUT',
+      body: JSON.stringify(selected),
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Forwarded-Host': 'strapi'
+      }
+    }, false, false);
+    yield put(persisted(data));
   } catch(err) {
     console.log(err.response.payload);
   }
@@ -24,6 +35,7 @@ export function* submit() {
 
 export function* defaultSaga() {
   const loadDataWatcher = yield fork(takeLatest, LOAD_DATA, loadData);
+  yield fork(takeLatest, PERSIST, persist);
   yield take(LOCATION_CHANGE);
   yield cancel(loadDataWatcher);
 }

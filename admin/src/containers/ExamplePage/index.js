@@ -13,8 +13,8 @@ import injectSaga from 'utils/injectSaga';
 import Button from 'components/Button';
 
 import styles from './styles.scss';
-import { loadData, setTreeData, persist } from './actions';
-import { makeSelectLoading, makeSelectData, makeSelectTreeData } from './selectors';
+import { loadData, setTreeData, persist, setSelected } from './actions';
+import { makeSelectLoading, makeSelectData, makeSelectTreeData, makeSelectSelected } from './selectors';
 import reducer from './reducer';
 import saga from './saga';
 
@@ -23,6 +23,26 @@ export class ExamplePage extends React.Component {
   constructor(props) {
     super(props);
     props.loadData();
+    this.state = {
+      edited: {
+        _id: '',
+        tmp: false,
+        title: '',
+        fields: []
+      }
+    };
+  }
+  handleInputChange = prop => event => {
+    const value = event.target.value;
+    this.setState({
+      edited: {
+        ...this.state.edited,
+        fields: {
+          ...this.state.edited.fields,
+          [prop]: value
+        }
+      }
+    });
   }
   tree() {
     return (
@@ -34,9 +54,15 @@ export class ExamplePage extends React.Component {
         canDrag={false}
         generateNodeProps={rowInfo => ({
           onClick: () => {
-            this.selected = rowInfo.node;
+            const newObj = {
+              _id: rowInfo.node._id,
+              title: rowInfo.node.title,
+              fields: rowInfo.node.fields,
+              tmp: rowInfo.node
+            };
+            this.props.setSelected(newObj);
+            this.setState({edited: newObj});
             this.forceUpdate();
-            console.log(rowInfo.node);
           }
         })}>
         </SortableTree>
@@ -44,13 +70,18 @@ export class ExamplePage extends React.Component {
     );
   }
   fields () {
-    if(this.selected !== null) {
+    if(this.props.selected !== null) {
       const field = [];
-      for (let prop in this.selected.fields) {
+      field.push(
+        <div>
+          <input class="title" value={this.props.selected.title}/>
+        </div>
+      );
+      for (let prop in this.props.selected.fields) {
         field.push(
           <div>
             <span>{prop}</span>
-            <input placeholder={this.selected.fields[prop]}/>
+            <input placeholder={this.props.selected.fields[prop]} onChange={this.handleInputChange(prop)} value={this.state.edited.fields[prop]}/>
           </div>
         );
       }
@@ -61,6 +92,23 @@ export class ExamplePage extends React.Component {
   }
   render() {
     const selectedElement = this.fields();
+    const renderBtn = this.props.selected ? (
+      <Button
+      primary
+      onClick={() => {
+        this.state.edited.tmp.fields = this.state.edited.fields;
+        this.props.setSelected({
+          _id: this.props.selected._id,
+          title: this.props.selected.title,
+          fields: {
+            ...this.props.selected.fields,
+            ...this.state.edited.fields
+          }
+        });
+        this.props.persist();
+      }}
+      label="Apply"/>
+    ) : <div></div>;
     return (
       <div className={styles.examplePage}>
         <div className="row">
@@ -68,11 +116,12 @@ export class ExamplePage extends React.Component {
             {this.tree()}
           </div>
           <div className="col-md-9 card">
-            {selectedElement}
-            <Button
-            primary
-            onClick={this.props.persist(this.selected)}
-            label="Apply"/>
+            <div>
+              {selectedElement}
+            </div>
+            <div>
+              {renderBtn}
+            </div>
           </div>
         </div>
       </div>
@@ -89,6 +138,10 @@ ExamplePage.propTypes = {
     PropTypes.bool,
     PropTypes.object,
   ]),
+  selected: PropTypes.oneOfType([
+    PropTypes.bool,
+    PropTypes.object
+  ]),
   persist: PropTypes.func,
   setTreeData: PropTypes.func,
   loadData: PropTypes.func.isRequired,
@@ -100,7 +153,8 @@ function mapDispatchToProps(dispatch) {
     {
       loadData,
       setTreeData,
-      persist
+      persist,
+      setSelected
     },
     dispatch,
   );
@@ -109,7 +163,8 @@ function mapDispatchToProps(dispatch) {
 const mapStateToProps = createStructuredSelector({
   loading: makeSelectLoading(),
   data: makeSelectData(),
-  treeData: makeSelectTreeData()
+  treeData: makeSelectTreeData(),
+  selected: makeSelectSelected()
 });
 
 const withConnect = connect(mapStateToProps, mapDispatchToProps);

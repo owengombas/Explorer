@@ -1,7 +1,21 @@
 .examplePage {
-
+    overflow: hidden;
 }
 
 .card {
+    height: 100%;
     background: white;
+}
+
+.title {
+    font-size: 2em !important;
+    font-weight: bold !important;
+}
+
+.card {
+    height: 100vh !important;
+}
+
+* {
+    outline: none !important;
 }

@@ -1,4 +1,4 @@
-import { LOAD_DATA, LOADED_DATA, SET_TREE, PERSIST } from './constants';
+import { LOAD_DATA, LOADED_DATA, SET_TREE, PERSIST, SET_SELECTED, PERSISTED } from './constants';
 
 export function loadData() {
   return {
@@ -20,8 +20,22 @@ export function setTreeData(data) {
   };
 }
 
-export function persist(data) {
+export function persist() {
   return {
     type: PERSIST
+  };
+}
+
+export function setSelected(data) {
+  return {
+    type: SET_SELECTED,
+    data
+  };
+}
+
+export function persisted(data) {
+  return {
+    type: PERSISTED,
+    data
   };
 }

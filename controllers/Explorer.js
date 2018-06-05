@@ -1,7 +1,5 @@
 'use strict';
 
-const Service = require('../services/Explorer');
-
 module.exports = {
   index: async (ctx) => {
     ctx.send({
@@ -13,6 +11,9 @@ module.exports = {
     ctx.send(m);
   },
   setElement: async (ctx) => {
-    ctx.send(await strapi.services.element.update(ctx.params));
+    console.log(ctx.request.body);
+    let x = await strapi.services.element.edit({_id: ctx.request.body._id}, ctx.request.body);
+    console.log(x);
+    ctx.send(x);
   }
 };

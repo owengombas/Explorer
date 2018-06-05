@@ -17,8 +17,16 @@
       }
     },
     {
-      "method": "post",
-      "path": "/elements/",
+      "method": "POST",
+      "path": "/elements",
+      "handler": "Explorer.addElement",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/elements",
       "handler": "Explorer.setElement",
       "config": {
         "policies": []
