@@ -28,9 +28,10 @@ export class ExamplePage extends React.Component {
       edited: {
         _id: '',
         tmp: false,
-        title: '',
+        title: 'Nothing is selected',
         fields: []
-      }
+      },
+      prop: ''
     };
   }
   handleInputChange = prop => event => {
@@ -45,6 +46,20 @@ export class ExamplePage extends React.Component {
       }
     });
   }
+  handleInputChangeProp = prop => event => {
+    const newProp = event.target.value;
+    const newObj = {};
+    for (const [key, value] of Object.entries(this.state.edited.fields)) {
+      if (key !== prop) {
+        newObj[key] = value;
+      } else {
+        newObj[newProp] = value;
+      }
+    }
+    this.state.edited.tmp.fields = newObj;
+    this.state.edited.fields = newObj;
+    this.forceUpdate();
+  }
   handleInputChangeTitle = event => {
     const value = event.target.value;
     this.setState({
@@ -56,12 +71,13 @@ export class ExamplePage extends React.Component {
   }
   tree() {
     return (
-      <div style={{ height: 500}}>
+      <div style={{ height: 500, margin: '1em .5em 0 1em'}}>
         <SortableTree
         treeData={this.props.treeData}
         onChange={data => this.props.setTreeData(data)}
         theme={FileExplorerTheme}
-        canDrag={false}
+        className='tree'
+        scaffoldBlockPxWidth={20}
         generateNodeProps={rowInfo => ({
           onClick: () => {
             const newObj = {
@@ -80,28 +96,40 @@ export class ExamplePage extends React.Component {
     );
   }
   fields () {
-    if(this.props.selected !== null) {
+    if(this.state.edited.selected !== null) {
       const field = [];
       field.push(
-        <div className="col-md-12">
-          <input className={styles.title} onChange={this.handleInputChangeTitle} value={this.state.edited.title}/>
+        <div>
+          <input disabled={!this.state.edited.tmp} className={styles.title} onChange={this.handleInputChangeTitle} value={this.state.edited.title}/>
         </div>
       );
-      for (let prop in this.props.selected.fields) {
+      for (let prop in this.state.edited.fields) {
         field.push(
-          <div>
-            <div className="col-md-3">
-              <h2>{prop}</h2>
+          <div className={styles.mb_25}>
+            <div className="row">
+              <div className="col-md-12">
+                <input className={styles.prop} value={prop} onChange={this.handleInputChangeProp(prop)}/>
+              </div>
             </div>
-            <div className={styles.mb_25 + ' col-md-12'}>
-              <InputText
-              styles={styles}
-              key={prop}
-              name={prop}
-              inputDescription={prop}
-              placeholder={this.props.selected.fields[prop]}
-              onChange={this.handleInputChange(prop)}
-              value={this.state.edited.fields[prop]}></InputText>
+            <div className="row">
+              <div className='col-lg-10 col-md-9'>
+                <InputText
+                styles={styles}
+                key={prop}
+                name={prop}
+                inputDescription={prop}
+                placeholder="Your value..."
+                onChange={this.handleInputChange(prop)}
+                value={this.state.edited.fields[prop]}></InputText>
+              </div>
+              <div className="col-md-3 col-lg-2">
+                <button
+                className={styles.btnDelete}
+                onClick={() => {
+                  delete this.state.edited.fields[prop];
+                  this.forceUpdate();
+                }}>-</button>
+              </div>
             </div>
           </div>
         );
@@ -114,22 +142,38 @@ export class ExamplePage extends React.Component {
   render() {
     const selectedElement = this.fields();
     const renderBtn = this.props.selected ? (
-      <Button
-      primary
-      onClick={() => {
-        this.state.edited.tmp.title = this.state.edited.title;
-        this.state.edited.tmp.fields = this.state.edited.fields;
-        this.props.setSelected({
-          _id: this.props.selected._id,
-          title: this.state.edited.title,
-          fields: {
-            ...this.props.selected.fields,
-            ...this.state.edited.fields
-          }
-        });
-        this.props.persist();
-      }}
-      label="Apply"/>
+      <div>
+        <div className={styles.mb_25}>
+          <Button
+          primary
+          label="+"
+          onClick={() => {
+            this.state.edited.fields[`New ${Object.keys(this.state.edited.fields).length}`] = '';
+            this.fields();
+            this.forceUpdate();
+            console.log(this.state.edited);
+            return;
+          }}/>
+        </div>
+        <div>
+          <Button
+          primary
+          onClick={() => {
+            this.state.edited.tmp.title = this.state.edited.title;
+            this.state.edited.tmp.fields = this.state.edited.fields;
+            this.props.setSelected({
+              _id: this.props.selected._id,
+              title: this.state.edited.title,
+              fields: {
+                ...this.props.selected.fields,
+                ...this.state.edited.fields
+              }
+            });
+            this.props.persist();
+          }}
+          label="Apply"/>
+        </div>
+      </div>
     ) : <div></div>;
     return (
       <div className={styles.examplePage}>
@@ -140,11 +184,15 @@ export class ExamplePage extends React.Component {
                 {this.tree()}
               </div>
               <div className={styles.card + ' col-md-9'}>
-                <div>
-                  {selectedElement}
+                <div className="row">
+                  <div className="col-md-12">
+                    {selectedElement}
+                  </div>
                 </div>
-                <div className="col-md-12">
-                  {renderBtn}
+                <div className="row">
+                  <div className="col-md-12">
+                    {renderBtn}
+                  </div>
                 </div>
               </div>
             </div>

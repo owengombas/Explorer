@@ -19,6 +19,20 @@
     }
 }
 
+.rstcustom__collapseButton:focus::after, .rstcustom__expandButton:focus::after {
+    filter: none !important;
+}
+
+.tree {
+    .rstcustom__collapseButton, .rstcustom__expandButton {
+        background: blue !important;
+        filter: none !important;
+    }
+}
+
+.innerTree {
+}
+
 .card {
     padding: 2em 2em 0 2em;
     height: calc(100vh - 6rem);
@@ -30,6 +44,39 @@
 
 .mb_25 {
     margin-bottom: 25px !important;
+}
+
+.btnDelete {
+    vertical-align: bottom;
+    font-size: 2em;
+    background: #292b2ce8;
+    height: 3.4rem;
+    max-width: 50px;
+    margin-top: .9rem;
+    line-height: 3.4rem;
+    align-self: flex-end;
+    color: white;
+    border-radius: .2em;
+    width: 100% !important;
+    cursor: pointer;
+    box-shadow: 15px 0px 40px -8px rgba(0, 0, 0, 0.377);
+}
+
+.prop {
+    width: auto !important;
+    font-size: 1.2em;
+    font-weight: bold;
+    border-radius: .2em;
+    padding: 0 .4em;
+    transition: all .3s;
+    border: 1px solid transparent;
+    /*
+    &:hover, &:focus, &:active {
+        background: rgba(0, 0, 0, .02);
+        box-shadow: 0px 1px 1px rgba(104, 118, 142, 0.2);
+        border-color: #E3E9F3; // #78caff
+    }
+    */
 }
 
 * {
