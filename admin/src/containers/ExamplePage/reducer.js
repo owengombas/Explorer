@@ -1,6 +1,6 @@
 import { fromJS } from 'immutable';
 
-import { LOAD_DATA, LOADED_DATA, SET_TREE, SET_SELECTED, PERSISTED } from './constants';
+import { LOAD_DATA, LOADED_DATA, SET_TREE, SET_SELECTED, PERSISTED, ADDED, DELETED } from './constants';
 
 const initialState = fromJS({
   loading: false,
@@ -20,6 +20,10 @@ function examplePageReducer(state = initialState, action) {
     case SET_SELECTED:
       return state.set('selected', action.data);
     case PERSISTED:
+      return;
+    case DELETED:
+      return;
+    case ADDED:
       return;
     default:
       return state;

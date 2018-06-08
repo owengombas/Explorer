@@ -1,4 +1,4 @@
-import { LOAD_DATA, LOADED_DATA, SET_TREE, PERSIST, SET_SELECTED, PERSISTED } from './constants';
+import { LOAD_DATA, LOADED_DATA, SET_TREE, PERSIST, SET_SELECTED, PERSISTED, ADD, ADDED, DEL, DELETED } from './constants';
 
 export function loadData() {
   return {
@@ -37,5 +37,30 @@ export function persisted(data) {
   return {
     type: PERSISTED,
     data
+  };
+}
+
+export function add(data) {
+  return {
+    type: ADD,
+    data
+  };
+}
+
+export function added() {
+  return {
+    type: ADDED
+  };
+}
+
+export function del() {
+  return {
+    type: DEL
+  };
+}
+
+export function deleted() {
+  return {
+    type: DELETED
   };
 }

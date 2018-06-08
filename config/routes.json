@@ -31,6 +31,14 @@
       "config": {
         "policies": []
       }
+    },
+    {
+      "method": "POST",
+      "path": "/elements/del",
+      "handler": "Explorer.delElement",
+      "config": {
+        "policies": []
+      }
     }
   ]
 }

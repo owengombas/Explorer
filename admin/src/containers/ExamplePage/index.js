@@ -4,8 +4,9 @@ import { connect } from 'react-redux';
 import { createStructuredSelector } from 'reselect';
 import { injectIntl } from 'react-intl';
 import { bindActionCreators, compose } from 'redux';
-import SortableTree from 'react-sortable-tree';
+import SortableTree, {addNodeUnderParent, removeNodeAtPath} from 'react-sortable-tree';
 import FileExplorerTheme from 'react-sortable-tree-theme-file-explorer';
+import id from 'bson-objectid';
 
 import injectReducer from 'utils/injectReducer';
 import injectSaga from 'utils/injectSaga';
@@ -14,7 +15,7 @@ import Button from 'components/Button';
 import InputText from 'components/InputText';
 
 import styles from './styles.scss';
-import { loadData, setTreeData, persist, setSelected } from './actions';
+import { loadData, setTreeData, persist, setSelected, add, del } from './actions';
 import { makeSelectLoading, makeSelectData, makeSelectTreeData, makeSelectSelected } from './selectors';
 import reducer from './reducer';
 import saga from './saga';
@@ -28,9 +29,10 @@ export class ExamplePage extends React.Component {
       edited: {
         _id: '',
         parent: [],
-        tmp: false,
+        tmp: {},
         title: 'Nothing is selected',
-        fields: []
+        fields: [],
+        children: []
       },
       prop: ''
     };
@@ -71,13 +73,11 @@ export class ExamplePage extends React.Component {
     });
   }
   handleMoveNode = ({node, nextParentNode}) => {
-    console.log(this.getSelectedProps(node));
     if (nextParentNode) {
       node.parent[0] = nextParentNode._id;
     } else {
       node.parent = [];
     }
-    console.log(this.getSelectedProps(node));
     this.updateView(node);
     this.persistData();
   }
@@ -89,31 +89,82 @@ export class ExamplePage extends React.Component {
       fields: obj.fields,
       tmp: obj
     };
-    console.log(m);
     return m;
   }
   updateView = (newObj) => {
     newObj = this.getSelectedProps(newObj);
-    this.props.setSelected(newObj);
     this.setState({edited: newObj});
+    this.props.setSelected(newObj);
+    this.forceUpdate();
+  }
+  addNew = (parent, parentKey, getNodeKey) => {
+    const newFile = {
+      _id: id().str,
+      title: 'New',
+      parent: parent,
+      fields: {
+        New: ''
+      },
+      tmp: {}
+    };
+    this.props.setTreeData(
+      addNodeUnderParent({
+        treeData: this.props.treeData,
+        parentKey: parentKey,
+        expandParent: true,
+        getNodeKey,
+        newNode: newFile,
+      }).treeData
+    );
+    this.updateView(newFile);
+    this.props.add(newFile);
     this.forceUpdate();
   }
   tree() {
+    const getNodeKey = ({ treeIndex }) => treeIndex;
     return (
-      <div style={{ height: 500, margin: '1em .5em 0 1em'}}>
-        <SortableTree
-        onMoveNode={this.handleMoveNode}
-        treeData={this.props.treeData}
-        onChange={data => this.props.setTreeData(data)}
-        theme={FileExplorerTheme}
-        className='tree'
-        scaffoldBlockPxWidth={20}
-        generateNodeProps={rowInfo => ({
-          onClick: () => {
-            this.updateView(rowInfo.node);
-          }
-        })}>
-        </SortableTree>
+      <div className="row">
+        <div className="col-md-12">
+        <Button
+        label="New"
+        primary
+        onClick={() => {
+          this.addNew([], null, getNodeKey);
+        }}/>
+        </div>
+        <div className="col-md-12" style={{ height: 500, margin: '1em .5em 0 1em'}}>
+          <SortableTree
+          ref="sortableTree"
+          onMoveNode={this.handleMoveNode}
+          treeData={this.props.treeData}
+          onChange={data => this.props.setTreeData(data)}
+          theme={FileExplorerTheme}
+          className='tree'
+          scaffoldBlockPxWidth={20}
+          generateNodeProps={rowInfo => ({
+            onClick: () => {
+              this.updateView(rowInfo.node);
+            },
+            buttons: [
+              <button onClick={() => {
+                this.addNew(rowInfo.node._id, rowInfo.path[rowInfo.path.length - 1], getNodeKey);
+              }}>+</button>,
+              <button onClick={() => {
+                this.updateView(rowInfo.node);
+                this.props.del();
+                this.props.setTreeData(
+                  removeNodeAtPath({
+                    treeData: this.props.treeData,
+                    path: rowInfo.path,
+                    getNodeKey
+                  })
+                );
+                this.updateView({});
+              }}>-</button>
+            ]
+          })}>
+          </SortableTree>
+        </div>
       </div>
     );
   }
@@ -123,7 +174,7 @@ export class ExamplePage extends React.Component {
     return clone;
   }
   fields () {
-    if(this.state.edited.selected !== null) {
+    if(this.state.edited._id !== '') {
       const field = [];
       field.push(
         <div>
@@ -178,7 +229,7 @@ export class ExamplePage extends React.Component {
   }
   render() {
     const selectedElement = this.fields();
-    const renderBtn = this.props.selected ? (
+    const renderBtn = (!!this.props.selected) ? (
       <div>
         <div className={styles.mb_25}>
           <Button
@@ -188,13 +239,12 @@ export class ExamplePage extends React.Component {
             this.state.edited.fields[`New ${Object.keys(this.state.edited.fields).length}`] = '';
             this.fields();
             this.forceUpdate();
-            console.log(this.state.edited);
-            return;
           }}/>
         </div>
         <div className={styles.mb_25}>
           <Button
           primary
+          disabled={this.props.selected ? (this.props.selected._id === undefined) : true}
           onClick={() => {
             this.persistData();
           }}
@@ -204,7 +254,6 @@ export class ExamplePage extends React.Component {
           <Button
           primary
           onClick={() => {
-            console.log(this.state.edited, this.props.selected);
             this.updateView(this.props.selected);
           }}
           label="Cancel"/>
@@ -252,6 +301,8 @@ ExamplePage.propTypes = {
     PropTypes.bool,
     PropTypes.object
   ]),
+  del: PropTypes.func,
+  add: PropTypes.func,
   persist: PropTypes.func,
   setTreeData: PropTypes.func,
   loadData: PropTypes.func.isRequired,
@@ -264,7 +315,9 @@ function mapDispatchToProps(dispatch) {
       loadData,
       setTreeData,
       persist,
-      setSelected
+      setSelected,
+      add,
+      del
     },
     dispatch,
   );

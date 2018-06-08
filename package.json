@@ -23,9 +23,13 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
+    "bson-objectid": "^1.2.3",
+    "mongoose": "^5.1.4",
     "react-json-tree": "^0.11.0",
     "react-sortable-tree": "^2.1.2",
-    "react-sortable-tree-theme-file-explorer": "^1.1.2"
+    "react-sortable-tree-theme-file-explorer": "^1.1.2",
+    "shortid": "^2.2.8",
+    "uuid": "^3.2.1"
   },
   "devDependencies": {
     "strapi-helper-plugin": "3.0.0-alpha.12.2"

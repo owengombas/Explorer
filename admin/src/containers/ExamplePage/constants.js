@@ -4,3 +4,7 @@ export const SET_TREE = 'ExamplePage/SET_TREE';
 export const SET_SELECTED = 'ExamplePage/SET_SELECTED';
 export const PERSIST = 'ExamplePage/PERSIST';
 export const PERSISTED = 'ExamplePage/PERSISTED';
+export const ADD = 'ExamplePage/ADD';
+export const ADDED = 'ExamplePage/ADDED';
+export const DEL = 'ExamplePage/DEL';
+export const DELETED = 'ExamplePage/DELETED';
