@@ -36,8 +36,10 @@ export class ExamplePage extends React.Component {
     props.loadData();
     this.state = {
       edited: Object.assign({}, defaultState),
-      showModal: false,
-      toDelete: {},
+      showModalElement: false,
+      showModalField: false,
+      toDeleteField: {},
+      toDeleteElement: {},
       update: true
     };
   }
@@ -103,15 +105,15 @@ export class ExamplePage extends React.Component {
     this.forceUpdate();
   }
   addNew = (parent, parentKey, getNodeKey) => {
+    const strId = id().str;
     const newFile = {
-      _id: id().str,
-      title: 'New',
+      _id: strId,
+      title: strId,
       parent: parent,
-      fields: {
-        New: ''
-      },
+      fields: {},
       tmp: {}
     };
+    newFile.fields[id().str] = '';
     this.props.setTreeData(
       addNodeUnderParent({
         treeData: this.props.treeData,
@@ -131,9 +133,10 @@ export class ExamplePage extends React.Component {
       <div className="row">
         <div className="col-md-12">
         <Button
-        label="New"
+        label="New page"
         primary
         className={styles.fullWidth}
+        style={{marginBottom: 15}}
         onClick={() => {
           this.addNew([], null, getNodeKey);
         }}/>
@@ -141,6 +144,8 @@ export class ExamplePage extends React.Component {
         <div className="col-md-12" style={{ height: 500, margin: '1em .5em 0 1em'}}>
           <SortableTree
           ref="sortableTree"
+          style={{overflowX: 'auto', width: 'auto'}}
+          className={styles.treeOver}
           onMoveNode={this.handleMoveNode}
           treeData={this.props.treeData}
           onChange={data => this.props.setTreeData(data)}
@@ -159,7 +164,7 @@ export class ExamplePage extends React.Component {
               }}>+</button>,
               <button onClick={() => {
                 this.updateView(rowInfo.node);
-                this.setState({toDelete: rowInfo, showModal: true});
+                this.setState({toDeleteElement: rowInfo, showModalElement: true});
               }}>-</button>
             ]
           })}>
@@ -205,12 +210,7 @@ export class ExamplePage extends React.Component {
                 <button
                 className={styles.btnDelete}
                 onClick={() => {
-                  this.setState({
-                    edited: {
-                      ...this.state.edited,
-                      fields: this.removeKey(this.state.edited.fields, prop)
-                    }
-                  });
+                  this.setState({toDeleteField: prop, showModalField: true});
                 }}>-</button>
               </div>
             </div>
@@ -238,7 +238,7 @@ export class ExamplePage extends React.Component {
           primary
           label="+"
           onClick={() => {
-            this.state.edited.fields[`New ${Object.keys(this.state.edited.fields).length}`] = '';
+            this.state.edited.fields[id().str] = '';
             this.fields();
             this.forceUpdate();
           }}/>
@@ -252,6 +252,7 @@ export class ExamplePage extends React.Component {
           }}
           label="Apply"/>
         </div>
+        { /*
         <div className={styles.mb_25}>
           <Button
           primary
@@ -262,32 +263,47 @@ export class ExamplePage extends React.Component {
           }}
           label="Cancel"/>
         </div>
+        */}
       </div>
     ) : <div></div>;
     return (
       <div className={styles.examplePage}>
       <PopUpWarning
-          isOpen={this.state.showModal}
-          toggleModal={() => this.setState({ showModal: !this.state.showModal })}
+          isOpen={this.state.showModalElement}
+          toggleModal={() => this.setState({ showModalElement: !this.state.showModalElement })}
           popUpWarningType="danger"
           onConfirm={() => {
             this.props.setTreeData(
               removeNodeAtPath({
                 treeData: this.props.treeData,
-                path: this.state.toDelete.path,
+                path: this.state.toDeleteElement.path,
                 getNodeKey
               })
             );
-            this.state.toDelete.node.deleted = true;
+            this.state.toDeleteElement.node.deleted = true;
             this.props.del();
             this.updateView(Object.assign({}, defaultState));
-            this.setState({showModal: false});
+            this.setState({showModalElement: false});
+          }}
+        />
+        <PopUpWarning
+          isOpen={this.state.showModalField}
+          toggleModal={() => this.setState({ showModalField: !this.state.showModalField })}
+          popUpWarningType="danger"
+          onConfirm={() => {
+            this.setState({
+              edited: {
+                ...this.state.edited,
+                fields: this.removeKey(this.state.edited.fields, this.state.toDeleteField)
+              }
+            });
+            this.setState({showModalField: false});
           }}
         />
         <div className="row">
           <div className="col-md-12">
             <div className="row">
-              <div className="col-md-3">
+              <div className="col-md-3" style={{paddingLeft: 30, paddingTop: 15}}>
                 {this.tree()}
               </div>
               <div className={styles.card + ' col-md-9'}>

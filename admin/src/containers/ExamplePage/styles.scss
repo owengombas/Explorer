@@ -28,9 +28,8 @@
 }
 
 .tree {
-    .rstcustom__collapseButton, .rstcustom__expandButton {
-        background: blue !important;
-        filter: none !important;
+    .ReactVirtualized__Grid {
+        overflow-x: auto !important;
     }
 }
 
