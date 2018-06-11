@@ -11,8 +11,10 @@ import id from 'bson-objectid';
 import injectReducer from 'utils/injectReducer';
 import injectSaga from 'utils/injectSaga';
 
+import Wysiwyg from 'components/Wysiwyg';
 import Button from 'components/Button';
 import InputText from 'components/InputText';
+import PopUpWarning from 'components/PopUpWarning';
 
 import styles from './styles.scss';
 import { loadData, setTreeData, persist, setSelected, add, del } from './actions';
@@ -20,21 +22,23 @@ import { makeSelectLoading, makeSelectData, makeSelectTreeData, makeSelectSelect
 import reducer from './reducer';
 import saga from './saga';
 
+const defaultState = {
+  _id: '',
+  parent: [],
+  tmp: {},
+  title: 'Nothing is selected',
+  fields: []
+};
+
 export class ExamplePage extends React.Component {
-  selected = null;
   constructor(props) {
     super(props);
     props.loadData();
     this.state = {
-      edited: {
-        _id: '',
-        parent: [],
-        tmp: {},
-        title: 'Nothing is selected',
-        fields: [],
-        children: []
-      },
-      prop: ''
+      edited: Object.assign({}, defaultState),
+      showModal: false,
+      toDelete: {},
+      update: true
     };
   }
   handleInputChange = prop => event => {
@@ -91,8 +95,9 @@ export class ExamplePage extends React.Component {
     };
     return m;
   }
-  updateView = (newObj) => {
-    newObj = this.getSelectedProps(newObj);
+  updateView = (obj) => {
+    console.log(obj)
+    const newObj = obj !== null ? this.getSelectedProps(obj) : obj;
     this.setState({edited: newObj});
     this.props.setSelected(newObj);
     this.forceUpdate();
@@ -128,6 +133,7 @@ export class ExamplePage extends React.Component {
         <Button
         label="New"
         primary
+        className={styles.fullWidth}
         onClick={() => {
           this.addNew([], null, getNodeKey);
         }}/>
@@ -143,7 +149,9 @@ export class ExamplePage extends React.Component {
           scaffoldBlockPxWidth={20}
           generateNodeProps={rowInfo => ({
             onClick: () => {
-              this.updateView(rowInfo.node);
+              if (!rowInfo.node.deleted) {
+                this.updateView(rowInfo.node);
+              }
             },
             buttons: [
               <button onClick={() => {
@@ -151,15 +159,7 @@ export class ExamplePage extends React.Component {
               }}>+</button>,
               <button onClick={() => {
                 this.updateView(rowInfo.node);
-                this.props.del();
-                this.props.setTreeData(
-                  removeNodeAtPath({
-                    treeData: this.props.treeData,
-                    path: rowInfo.path,
-                    getNodeKey
-                  })
-                );
-                this.updateView({});
+                this.setState({toDelete: rowInfo, showModal: true});
               }}>-</button>
             ]
           })}>
@@ -174,7 +174,7 @@ export class ExamplePage extends React.Component {
     return clone;
   }
   fields () {
-    if(this.state.edited._id !== '') {
+    if (this.state.edited._id !== '') {
       const field = [];
       field.push(
         <div>
@@ -191,14 +191,15 @@ export class ExamplePage extends React.Component {
             </div>
             <div className={styles.relative + ' row'}>
               <div className='col-md-12'>
-                <InputText
+                <Wysiwyg
+                resetProps={true}
                 styles={styles}
-                key={prop}
+                key={this.state.edited._id + prop + this.state.update}
                 name={prop}
                 inputDescription={prop}
                 placeholder="Your value..."
                 onChange={this.handleInputChange(prop)}
-                value={this.state.edited.fields[prop]}></InputText>
+                value={this.state.edited.fields[prop]}/>
               </div>
               <div className={styles.btnDeleteGrp}>
                 <button
@@ -228,8 +229,9 @@ export class ExamplePage extends React.Component {
     this.props.persist();
   }
   render() {
+    const getNodeKey = ({ treeIndex }) => treeIndex;
     const selectedElement = this.fields();
-    const renderBtn = (!!this.props.selected) ? (
+    const renderBtn = (!!this.props.selected && this.props.selected._id !== '') ? (
       <div>
         <div className={styles.mb_25}>
           <Button
@@ -250,11 +252,13 @@ export class ExamplePage extends React.Component {
           }}
           label="Apply"/>
         </div>
-        <div>
+        <div className={styles.mb_25}>
           <Button
           primary
           onClick={() => {
+            console.log('a', this.props.selected);
             this.updateView(this.props.selected);
+            this.setState({update: !this.state.update});
           }}
           label="Cancel"/>
         </div>
@@ -262,6 +266,24 @@ export class ExamplePage extends React.Component {
     ) : <div></div>;
     return (
       <div className={styles.examplePage}>
+      <PopUpWarning
+          isOpen={this.state.showModal}
+          toggleModal={() => this.setState({ showModal: !this.state.showModal })}
+          popUpWarningType="danger"
+          onConfirm={() => {
+            this.props.setTreeData(
+              removeNodeAtPath({
+                treeData: this.props.treeData,
+                path: this.state.toDelete.path,
+                getNodeKey
+              })
+            );
+            this.state.toDelete.node.deleted = true;
+            this.props.del();
+            this.updateView(Object.assign({}, defaultState));
+            this.setState({showModal: false});
+          }}
+        />
         <div className="row">
           <div className="col-md-12">
             <div className="row">
