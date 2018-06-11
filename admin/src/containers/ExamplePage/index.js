@@ -160,13 +160,12 @@ export class ExamplePage extends React.Component {
               }
             },
             buttons: [
-              <button onClick={() => {
-                this.addNew(rowInfo.node._id, rowInfo.path[rowInfo.path.length - 1], getNodeKey);
-              }}>+</button>,
-              <button onClick={() => {
+              rowInfo.node.parent[0] && rowInfo.node.parent[0] === this.props.templates._id ? 
+              <div></div> : <button onClick={() => {this.addNew(rowInfo.node._id, rowInfo.path[rowInfo.path.length - 1], getNodeKey);}}>+</button>,
+              rowInfo.node._id !== this.props.templates._id ? <button onClick={() => {
                 this.updateView(rowInfo.node);
                 this.setState({toDeleteElement: rowInfo, showModalElement: true});
-              }}>-</button>
+              }}>-</button> : <div></div>
             ]
           })}>
           </SortableTree>
