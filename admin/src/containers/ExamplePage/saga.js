@@ -9,8 +9,13 @@ import {
 
 export function* loadData() {
   try {
-    const data = yield call(request, '/explorer/elements', { method: 'get' });
-    yield put(loadedData(data));
+    const elements = yield call(request, '/explorer/elements', { method: 'get' });
+    const templates = yield call(request, '/explorer/templates', { method: 'get' });
+    console.log(templates);
+    yield put(loadedData({
+      elements: elements,
+      templates: templates
+    }));
   } catch(err) {
     strapi.notification.error('Server error');
     console.log(err.response.payload);

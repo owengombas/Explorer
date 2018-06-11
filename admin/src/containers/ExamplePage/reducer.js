@@ -1,11 +1,12 @@
 import { fromJS } from 'immutable';
-
-import { LOAD_DATA, LOADED_DATA, SET_TREE, SET_SELECTED, PERSISTED, ADDED, DELETED } from './constants';
+import _ from 'lodash';
+import { LOAD_DATA, LOADED_DATA, SET_ELEMENTS, SET_SELECTED, PERSISTED, ADDED, DELETED } from './constants';
 
 const initialState = fromJS({
   loading: false,
   data: [{}],
-  treeData: [{}],
+  elements: [{}],
+  templates: [{}],
   selected: false
 });
 
@@ -14,9 +15,9 @@ function examplePageReducer(state = initialState, action) {
     case LOAD_DATA:
       return state.set('data', null);
     case LOADED_DATA:
-      return state.set('data', action.data).set('treeData', action.data);
-    case SET_TREE:
-      return state.set('treeData', action.data);
+      return state.set('elements', action.data.elements).set('templates', _.filter(action.data.elements, {title: 'Templates'})[0]);
+    case SET_ELEMENTS:
+      return state.set('elements', action.data);
     case SET_SELECTED:
       return state.set('selected', action.data);
     case PERSISTED:

@@ -7,18 +7,20 @@ import { bindActionCreators, compose } from 'redux';
 import SortableTree, {addNodeUnderParent, removeNodeAtPath} from 'react-sortable-tree';
 import FileExplorerTheme from 'react-sortable-tree-theme-file-explorer';
 import id from 'bson-objectid';
+import _ from 'lodash';
 
 import injectReducer from 'utils/injectReducer';
 import injectSaga from 'utils/injectSaga';
 
+import InputSelect from 'components/InputSelect';
 import Wysiwyg from 'components/Wysiwyg';
 import Button from 'components/Button';
 import InputText from 'components/InputText';
 import PopUpWarning from 'components/PopUpWarning';
 
 import styles from './styles.scss';
-import { loadData, setTreeData, persist, setSelected, add, del } from './actions';
-import { makeSelectLoading, makeSelectData, makeSelectTreeData, makeSelectSelected } from './selectors';
+import { loadData, setElements, persist, setSelected, add, del } from './actions';
+import { makeSelectLoading, makeSelectData, makeSelectElements, makeSelectSelected, makeSelectTemplates } from './selectors';
 import reducer from './reducer';
 import saga from './saga';
 
@@ -98,7 +100,6 @@ export class ExamplePage extends React.Component {
     return m;
   }
   updateView = (obj) => {
-    console.log(obj)
     const newObj = obj !== null ? this.getSelectedProps(obj) : obj;
     this.setState({edited: newObj});
     this.props.setSelected(newObj);
@@ -114,9 +115,9 @@ export class ExamplePage extends React.Component {
       tmp: {}
     };
     newFile.fields[id().str] = '';
-    this.props.setTreeData(
+    this.props.setElements(
       addNodeUnderParent({
-        treeData: this.props.treeData,
+        treeData: this.props.elements,
         parentKey: parentKey,
         expandParent: true,
         getNodeKey,
@@ -147,8 +148,8 @@ export class ExamplePage extends React.Component {
           style={{overflowX: 'auto', width: 'auto'}}
           className={styles.treeOver}
           onMoveNode={this.handleMoveNode}
-          treeData={this.props.treeData}
-          onChange={data => this.props.setTreeData(data)}
+          treeData={this.props.elements}
+          onChange={data => this.props.setElements(data)}
           theme={FileExplorerTheme}
           className='tree'
           scaffoldBlockPxWidth={20}
@@ -231,8 +232,28 @@ export class ExamplePage extends React.Component {
   render() {
     const getNodeKey = ({ treeIndex }) => treeIndex;
     const selectedElement = this.fields();
+    console.log('a', this.props.templates)
     const renderBtn = (!!this.props.selected && this.props.selected._id !== '') ? (
       <div>
+        <div className={styles.mb_25}>
+          <InputSelect
+          name="import"
+          onChange={(event) => {
+            console.log('c', event.target.value);
+            const element = _.filter(this.props.templates.children, {title: event.target.value})[0];
+            console.log(element);
+            this.setState({edited: {
+              ...this.state.edited,
+              fields: {
+                ...this.state.edited.fields,
+                ...element.fields
+              }
+            }});
+          }}
+          value='Select...'
+          selectOptions={['Select', ...(this.props.templates.children.map(obj => obj['title']))]}
+          placeholder='Select...'/>
+        </div>
         <div className={styles.mb_25}>
           <Button
           primary
@@ -273,9 +294,9 @@ export class ExamplePage extends React.Component {
           toggleModal={() => this.setState({ showModalElement: !this.state.showModalElement })}
           popUpWarningType="danger"
           onConfirm={() => {
-            this.props.setTreeData(
+            this.props.setElements(
               removeNodeAtPath({
-                treeData: this.props.treeData,
+                treeData: this.props.elements,
                 path: this.state.toDeleteElement.path,
                 getNodeKey
               })
@@ -339,10 +360,11 @@ ExamplePage.propTypes = {
     PropTypes.bool,
     PropTypes.object
   ]),
+  templates: PropTypes.array,
   del: PropTypes.func,
   add: PropTypes.func,
   persist: PropTypes.func,
-  setTreeData: PropTypes.func,
+  setElements: PropTypes.func,
   loadData: PropTypes.func.isRequired,
   loading: PropTypes.bool.isRequired,
 };
@@ -351,7 +373,7 @@ function mapDispatchToProps(dispatch) {
   return bindActionCreators(
     {
       loadData,
-      setTreeData,
+      setElements,
       persist,
       setSelected,
       add,
@@ -364,8 +386,9 @@ function mapDispatchToProps(dispatch) {
 const mapStateToProps = createStructuredSelector({
   loading: makeSelectLoading(),
   data: makeSelectData(),
-  treeData: makeSelectTreeData(),
-  selected: makeSelectSelected()
+  elements: makeSelectElements(),
+  selected: makeSelectSelected(),
+  templates: makeSelectTemplates()
 });
 
 const withConnect = connect(mapStateToProps, mapDispatchToProps);

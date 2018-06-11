@@ -18,6 +18,9 @@ module.exports = {
       message: 'ok'
     });
   },
+  getTemplates: async (ctx) => {
+    ctx.send(await strapi.services.template.fetchAll({}));
+  },
   getElements: async (ctx) => {
     ctx.send(await strapi.services.element.fetchAll({parent: []}));
   },

@@ -17,6 +17,14 @@
       }
     },
     {
+      "method": "GET",
+      "path": "/templates",
+      "handler": "Explorer.getTemplates",
+      "config": {
+        "policies": []
+      }
+    },
+    {
       "method": "POST",
       "path": "/elements",
       "handler": "Explorer.addElement",

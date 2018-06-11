@@ -15,10 +15,13 @@ const makeSelectLoading = () =>
 const makeSelectData = () =>
   createSelector(selectExamplePageDomain(), substate => substate.get('data'));
 
-const makeSelectTreeData = () =>
-  createSelector(selectExamplePageDomain(), substate => substate.get('treeData'));
+const makeSelectElements = () =>
+  createSelector(selectExamplePageDomain(), substate => substate.get('elements'));
 
 const makeSelectSelected = () =>
   createSelector(selectExamplePageDomain(), substate => substate.get('selected'));
 
-export { makeSelectLoading, makeSelectData, makeSelectTreeData, makeSelectSelected };
+const makeSelectTemplates = () => 
+  createSelector(selectExamplePageDomain(), substate => substate.get('templates'));
+
+export { makeSelectLoading, makeSelectData, makeSelectElements, makeSelectSelected, makeSelectTemplates };
