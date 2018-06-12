@@ -8,3 +8,4 @@ export const ADD = 'ExamplePage/ADD';
 export const ADDED = 'ExamplePage/ADDED';
 export const DEL = 'ExamplePage/DEL';
 export const DELETED = 'ExamplePage/DELETED';
+export const SET_TEMPLATES = 'ExamplePage/SET_TEMPLATES';

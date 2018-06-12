@@ -19,7 +19,7 @@ import InputText from 'components/InputText';
 import PopUpWarning from 'components/PopUpWarning';
 
 import styles from './styles.scss';
-import { loadData, setElements, persist, setSelected, add, del } from './actions';
+import { loadData, setElements, persist, setSelected, add, del, setTemplates } from './actions';
 import { makeSelectLoading, makeSelectData, makeSelectElements, makeSelectSelected, makeSelectTemplates } from './selectors';
 import reducer from './reducer';
 import saga from './saga';
@@ -80,6 +80,9 @@ export class ExamplePage extends React.Component {
       }
     });
   }
+  updateTemplates() {
+    this.props.setTemplates(_.find(this.props.elements, {title: 'Templates'}));
+  }
   handleMoveNode = ({node, nextParentNode}) => {
     if (nextParentNode) {
       node.parent[0] = nextParentNode._id;
@@ -101,6 +104,7 @@ export class ExamplePage extends React.Component {
   }
   updateView = (obj) => {
     const newObj = obj !== null ? this.getSelectedProps(obj) : obj;
+    this.updateTemplates();
     this.setState({edited: newObj});
     this.props.setSelected(newObj);
     this.forceUpdate();
@@ -231,16 +235,13 @@ export class ExamplePage extends React.Component {
   render() {
     const getNodeKey = ({ treeIndex }) => treeIndex;
     const selectedElement = this.fields();
-    console.log('a', this.props.templates)
     const renderBtn = (!!this.props.selected && this.props.selected._id !== '') ? (
       <div>
         <div className={styles.mb_25}>
           <InputSelect
           name="import"
           onChange={(event) => {
-            console.log('c', event.target.value);
             const element = _.filter(this.props.templates.children, {title: event.target.value})[0];
-            console.log(element);
             this.setState({edited: {
               ...this.state.edited,
               fields: {
@@ -359,6 +360,7 @@ ExamplePage.propTypes = {
     PropTypes.bool,
     PropTypes.object
   ]),
+  setTemplates: PropTypes.func,
   templates: PropTypes.array,
   del: PropTypes.func,
   add: PropTypes.func,
@@ -371,6 +373,7 @@ ExamplePage.propTypes = {
 function mapDispatchToProps(dispatch) {
   return bindActionCreators(
     {
+      setTemplates,
       loadData,
       setElements,
       persist,

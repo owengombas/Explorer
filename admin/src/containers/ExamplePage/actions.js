@@ -1,4 +1,4 @@
-import { LOAD_DATA, LOADED_DATA, SET_ELEMENTS, PERSIST, SET_SELECTED, PERSISTED, ADD, ADDED, DEL, DELETED } from './constants';
+import { LOAD_DATA, LOADED_DATA, SET_ELEMENTS, PERSIST, SET_SELECTED, PERSISTED, ADD, ADDED, DEL, DELETED, SET_TEMPLATES } from './constants';
 
 export function loadData() {
   return {
@@ -62,5 +62,12 @@ export function del() {
 export function deleted() {
   return {
     type: DELETED
+  };
+}
+
+export function setTemplates(data) {
+  return {
+    type: SET_TEMPLATES,
+    data
   };
 }

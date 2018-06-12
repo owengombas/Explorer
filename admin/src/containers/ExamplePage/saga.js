@@ -2,7 +2,7 @@ import request from 'utils/request';
 import { LOCATION_CHANGE } from 'react-router-redux';
 import { takeLatest, put, fork, take, cancel, call, select } from 'redux-saga/effects';
 import { loadedData, persisted, added, deleted } from './actions';
-import { LOAD_DATA, PERSIST, ADD, DELETED, DEL } from './constants';
+import { LOAD_DATA, PERSIST, ADD, DEL } from './constants';
 import {
   makeSelectSelected
 } from './selectors';
