@@ -60,7 +60,7 @@ export class ExamplePage extends React.Component {
       case 'number':
         value = parseInt(value);
         if (isNaN(value)) {
-          value = 0;
+          value = this.state.edited.fields[prop].value;
         }
         break;
     }
