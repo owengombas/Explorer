@@ -16,6 +16,8 @@ import InputSelect from 'components/InputSelect';
 import Wysiwyg from 'components/Wysiwyg';
 import Button from 'components/Button';
 import InputText from 'components/InputText';
+import InputNumber from 'components/InputNumber';
+import InputToggle from 'components/InputToggle';
 import PopUpWarning from 'components/PopUpWarning';
 
 import styles from './styles.scss';
@@ -23,6 +25,13 @@ import { loadData, setElements, persist, setSelected, add, del, setTemplates } f
 import { makeSelectLoading, makeSelectData, makeSelectElements, makeSelectSelected, makeSelectTemplates } from './selectors';
 import reducer from './reducer';
 import saga from './saga';
+
+const types = [
+  'Text',
+  'Short',
+  'Bool',
+  'Number'
+];
 
 const defaultState = {
   _id: '',
@@ -45,14 +54,25 @@ export class ExamplePage extends React.Component {
       update: true
     };
   }
-  handleInputChange = prop => event => {
-    const value = event.target.value;
+  handleInputChange = (prop, type = 'string') => event => {
+    let value = event.target.value;
+    switch (type) {
+      case 'number':
+        value = parseInt(value);
+        if (isNaN(value)) {
+          value = 0;
+        }
+        break;
+    }
     this.setState({
       edited: {
         ...this.state.edited,
         fields: {
           ...this.state.edited.fields,
-          [prop]: value
+          [prop]: {
+            type: this.state.edited.fields[prop].type,
+            value: value
+          }
         }
       }
     });
@@ -118,7 +138,10 @@ export class ExamplePage extends React.Component {
       fields: {},
       tmp: {}
     };
-    newFile.fields[id().str] = '';
+    newFile.fields[id().str] = {
+      value: '',
+      type: 'text'
+    };
     this.props.setElements(
       addNodeUnderParent({
         treeData: this.props.elements,
@@ -182,6 +205,39 @@ export class ExamplePage extends React.Component {
     delete clone[deleteKey];
     return clone;
   }
+  getFieldByType (prop) {
+    const val = this.state.edited.fields[prop];
+    console.log('dg', val, this.state.edited.fields)
+    switch(val.type) {
+      case 'text':
+        return (<Wysiwyg
+        resetProps={true}
+        styles={styles}
+        key={this.state.edited._id + prop + this.state.update}
+        name={prop}
+        inputDescription={prop}
+        placeholder="Your value..."
+        onChange={this.handleInputChange(prop)}
+        value={this.state.edited.fields[prop].value}/>);
+      case 'short':
+        return (<InputText
+        name={prop}
+        placeholder={'Your value...'}
+        onChange={this.handleInputChange(prop)}
+        value={this.state.edited.fields[prop].value}/>);
+      case 'number':
+        return (<InputNumber
+        name={prop}
+        placeholder={'Your value...'}
+        onChange={this.handleInputChange(prop, 'number')}
+        value={parseInt(this.state.edited.fields[prop].value)}/>);
+      case 'bool':
+        return (<InputToggle
+          value={Boolean(this.state.edited.fields[prop].value)}
+          onChange={this.handleInputChange(prop, 'bool')}/>);
+          
+    }
+  }
   fields () {
     if (this.state.edited._id !== '') {
       const field = [];
@@ -192,23 +248,30 @@ export class ExamplePage extends React.Component {
       );
       for (let prop in this.state.edited.fields) {
         field.push(
-          <div className={styles.mb_25}>
+          <div className={styles.mb_50}>
             <div className="row">
               <div className="col-md-12">
                 <input className={styles.prop} value={prop} onChange={this.handleInputChangeProp(prop)}/>
+                <InputSelect
+                selectOptions={
+                  types.map(type => {
+                    return {
+                      id: type,
+                      name: type,
+                      value: type,
+                      selected: type.toLowerCase() === this.state.edited.fields[prop].type
+                    };
+                  })
+                }
+                onChange={(event) => {
+                  this.state.edited.fields[prop].type = event.target.value.toLowerCase();
+                  this.forceUpdate();
+                }}></InputSelect>
               </div>
             </div>
             <div className={styles.relative + ' row'}>
               <div className='col-md-12'>
-                <Wysiwyg
-                resetProps={true}
-                styles={styles}
-                key={this.state.edited._id + prop + this.state.update}
-                name={prop}
-                inputDescription={prop}
-                placeholder="Your value..."
-                onChange={this.handleInputChange(prop)}
-                value={this.state.edited.fields[prop]}/>
+                {this.getFieldByType(prop)}
               </div>
               <div className={styles.btnDeleteGrp}>
                 <button
@@ -238,6 +301,7 @@ export class ExamplePage extends React.Component {
     const renderBtn = (!!this.props.selected && this.props.selected._id !== '') ? (
       <div>
         <div className={styles.mb_25}>
+          <h2>Import a template</h2>
           <InputSelect
           name="import"
           onChange={(event) => {
@@ -251,7 +315,7 @@ export class ExamplePage extends React.Component {
             }});
           }}
           value='Select...'
-          selectOptions={['Select', ...(this.props.templates.children.map(obj => obj['title']))]}
+          selectOptions={['Select...', ...(this.props.templates.children.map(obj => obj['title']))]}
           placeholder='Select...'/>
         </div>
         <div className={styles.mb_25}>
