@@ -27,7 +27,7 @@ import reducer from './reducer';
 import saga from './saga';
 
 const types = [
-  'Text',
+  'Markdown',
   'Short',
   'Bool',
   'Number'
@@ -140,7 +140,7 @@ export class ExamplePage extends React.Component {
     };
     newFile.fields[id().str] = {
       value: '',
-      type: 'text'
+      type: 'markdown'
     };
     this.props.setElements(
       addNodeUnderParent({
@@ -207,9 +207,8 @@ export class ExamplePage extends React.Component {
   }
   getFieldByType (prop) {
     const val = this.state.edited.fields[prop];
-    console.log('dg', val, this.state.edited.fields)
     switch(val.type) {
-      case 'text':
+      case 'markdown':
         return (<Wysiwyg
         resetProps={true}
         styles={styles}
@@ -323,7 +322,10 @@ export class ExamplePage extends React.Component {
           primary
           label="+"
           onClick={() => {
-            this.state.edited.fields[id().str] = '';
+            this.state.edited.fields[id().str] = {
+              value: '',
+              type: 'markdown'
+            };
             this.fields();
             this.forceUpdate();
           }}/>
